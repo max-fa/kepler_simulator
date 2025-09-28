@@ -1,40 +1,42 @@
 module Kepler
 
-using ForwardDiff
+μ = 3.99e+14
 
-E_counter = 0
 #=
-    This function is Kepler's Equation.
-    E(t) will be finding the roots of this function by varying E.
+    Kepler's Equation
 =#
-function K(E, ϵ, a, t)
-    μ = 3.99e+14 # assuming geocentric orbit
+function K(t, a, ϵ, E = π)
     M = sqrt(μ/(a^3)) * t
     return E - ϵ*sin(E) - M
 end
 
-function K_diff(E, ϵ, a, t)
-    μ = 3.99e+14
+
+#=
+    Derivative of Kepler's Equation with respect to E
+=#
+function K_diff(t, a, ϵ, E = π)
     M = sqrt(μ/(a^3)) * t
     return 1 - ϵ*cos(E)
 end
 
 #=
     This function takes in time as a parameter then uses Newton-Raphson method to solve Kepler's Equation.
-    E0 is the guess for E to be used in the Newton-Raphson algorithm.
-    This gives the eccentric anomaly, E, that can then be used to find the radius and true anomaly.
 =#
-function E(E_prev, ϵ, a, t)
-    
-    global E_counter += 1
-    E_next = E_prev - K(E_prev, ϵ, a, t)/K_diff(E_prev, ϵ, a, t)
-    relc = abs((E_next - E_prev)/E_prev) # the relative change from E_prev to E_next
-
-    if E_counter == 5
-        return E_next
+function E(t, a, ϵ, E_prev = π, n = 0)
+    if n == 5
+        return E_prev * (180/π)
     end
 
-    relc <= 0.02 ? (return E_next) : E(E_next, ϵ, a, t) # stop the algorithm once successive iterations are within 2% of each other
+    E_next = E_prev - K(t, a, ϵ, E_prev)/K_diff(t, a, ϵ, E_prev)
+    relc = abs((E_next - E_prev)/E_prev) # the relative change from E_prev to E_next
+
+    # stop the algorithm once successive iterations are within 2% of each other
+    if relc <= 0.02
+        return E_next * (180/π)
+    else
+        n += 1
+        E(t, a, ϵ, E_next, n)
+    end
     
 end
 
