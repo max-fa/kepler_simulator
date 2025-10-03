@@ -32,6 +32,7 @@ struct Orbit
     z::Function
     r::Function
     φ::Function
+    v::Function
 end
 
 
@@ -46,35 +47,19 @@ function r(t, a, ϵ)
     return a*(1 - ϵ^2)/(1 + ϵ*cosφ(t, a, ϵ))
 end
 
+function normalize(φ_raw, E, t, T)
+    n = floor(E / 180)
+    
+    return (((-1)^n)*(φ_raw) + (n + 0.5*(1 - (-1)^n))*(180) - (360*t/T)) * (180/π)
+end
+
 # returns the orbital plane polar angle at a given time
 function φ_t(t, a, ϵ)
+    T = 2*π*sqrt((a^3)/μ)
     E = Kepler.E(t, a, ϵ)
+    #return E
     φ_raw = acosd((ϵ - cosd(E))/(ϵ*cosd(E) - 1)) # φ calculated from eccentric anomaly, always in [0,180]
-
-    # cos(φ), I'm calculating directly from E instead of using the
-    # cosφ() function so that I can avoid running Newton-Raphson again
-    c = (ϵ - cosd(E))/(ϵ*cosd(E) - 1)
-
-    if E in range(0,180)
-        # if E is in the top hemisphere of the orbit, then φ will
-        # be left in the default, upper hemisphere given by acosd
-        return φ_raw
-    else
-        # E is in the lower hemisphere and φ is in the uppper.
-        # Must compute the quadrant that φ is in in order to
-        # properly shift it into the bottom hemisphere
-        if c > 0
-            # φ is in Quadrant I, shift to IV
-            return 360 - φ_raw
-        elseif c < 0
-            # φ is in Quadrant II, so shift it to III
-            return 180 + φ_raw
-        else
-            # φ is 90°
-            return 270
-        end
-    end
-
+    return normalize(φ_raw, E, t, T)
 end
 
 # returns cartesian x coordinate at a given time, for a given orbit
@@ -87,6 +72,11 @@ end
 function y_t(t, a, ϵ)
     E = Kepler.E(t, a, ϵ)
     return a * sqrt(1 - ϵ^2) * sind(E)
+end
+
+function v(t, a, ϵ)
+    _r = r(t, a, ϵ)
+    return sqrt(μ*(2/_r - 1/a))
 end
 
 #=
@@ -114,10 +104,12 @@ function new_orbit(a::Real, ϵ::Real, i::Real, Ω::Real, ω::Real)
     orbit_x = t->(x0(t) * (cosd(Ω)*cosd(ω) - sind(Ω)*sind(ω)) + y0(t) * (sind(Ω)*cosd(i)*cosd(ω) + cosd(Ω)*sind(ω)))
     orbit_y = t->(x0(t) * (-sind(Ω)*cosd(ω) - cosd(Ω)*cosd(i)*sind(ω)) + y0(t) * (cosd(Ω)*cosd(i)*cosd(ω) - sind(Ω)*sind(ω)))
     orbit_z = t->(x0(t) * sind(i)*sind(ω) - y0(t) * sind(i)*cosd(ω))
+
+    orbit_v = t->v(t, a, ϵ)
     
 
     
-    return Orbit(elements, T, orbit_x, orbit_y, orbit_z, orbit_r, orbit_φ)
+    return Orbit(elements, T, orbit_x, orbit_y, orbit_z, orbit_r, orbit_φ, orbit_v)
 end
 
 end

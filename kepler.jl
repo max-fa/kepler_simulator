@@ -24,20 +24,20 @@ end
 =#
 function E(t, a, ϵ, E_prev = π, n = 0)
     if n == 5
-        return E_prev * (180/π)
+        #=print("Imprecision")
+        print("\n")=#
+        return rad2deg(E_prev)
     end
 
-    E_next = E_prev - K(t, a, ϵ, E_prev)/K_diff(t, a, ϵ, E_prev)
-    relc = abs((E_next - E_prev)/E_prev) # the relative change from E_prev to E_next
-
-    # stop the algorithm once successive iterations are within 2% of each other
-    if relc <= 0.02
-        return E_next * (180/π)
+    if abs(K(t, a, ϵ, E_prev)) <= 0.001
+        #=print("Precision")
+        print("\n")=#
+        return rad2deg(E_prev)
     else
+        E_next = E_prev - K(t, a, ϵ, E_prev)/K_diff(t, a, ϵ, E_prev)
         n += 1
         E(t, a, ϵ, E_next, n)
     end
-    
 end
 
 end

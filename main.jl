@@ -1,4 +1,5 @@
 include("orbits.jl")
+include("kepler.jl")
 
 import .Orbits
 using Plots
@@ -24,8 +25,10 @@ function main()
     # this is intended to model the Moon's orbit
     times = range(0.0, 5184000.0, step=3600)
 
-    plot(times, moon.r.(times), xlabel="Time Since Perigee (in seconds)", ylabel="Earth-Moon Distance (in meters)")
-    #plot(times, moon.φ.(times), xlabel="Time Since Perigee (in seconds)", ylabel="Moon's Orbital Angle")
+    #plot(times, Kepler.E.(times, moon.elements.a, moon.elements.ϵ), xlabel="Time Since Perigee (in seconds)", ylabel="Eccentric Anomaly (in degrees)")
+    #plot(times, moon.r.(times), xlabel="Time Since Perigee (in seconds)", ylabel="Earth-Moon Distance (in meters)")
+    plot(times, moon.φ.(times), xlabel="Time Since Perigee (in seconds)", ylabel="Moon's Orbital Angle")
+    #plot(times, moon.v.(times), xlabel="Time Since Perigee (in seconds)", ylabel="Moon Orbital Velocity (in m/s)")
     
     #savefig("img/moon_radius.png")
 
