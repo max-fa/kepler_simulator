@@ -2,8 +2,10 @@ module Orbits
 
 include("kepler.jl")
 import .Kepler
-
-μ = 3.99e+14
+m_E = 5.972e+24
+G = 6.674e-11
+μ = G * m_E
+c = 2.998e+8
 
 #=
 
@@ -33,18 +35,20 @@ struct Orbit
     r::Function
     φ::Function
     v::Function
+    τ::Function
 end
 
 
 # returns cos(φ) at a given time, for a given orbit
 function cosφ(t, a, ϵ)
-    E = Kepler.E(t, a, ϵ)
+    E = Kepler.E(t, a, ϵ, μ)
     return (ϵ - cosd(E))/(ϵ*cosd(E) - 1)
 end
 
 # returns the orbital radius at a given time, for a given orbit
 function r(t, a, ϵ)
-    return a*(1 - ϵ^2)/(1 + ϵ*cosφ(t, a, ϵ))
+    coeff = (1 - ϵ^2)/(1 + ϵ*cosφ(t, a, ϵ))
+    return a*coeff
 end
 
 function normalize(φ_raw, E, t, T)
@@ -55,28 +59,40 @@ end
 
 # returns the orbital plane polar angle at a given time
 function φ_t(t, a, ϵ)
-    T = 2*π*sqrt((a^3)/μ)
-    E = Kepler.E(t, a, ϵ)
+    T = 2.0*π*sqrt((a^3)/μ)
+    E = Kepler.E(t, a, ϵ, μ)
     #return E
     φ_raw = acosd((ϵ - cosd(E))/(ϵ*cosd(E) - 1)) # φ calculated from eccentric anomaly, always in [0,180]
-    return normalize(φ_raw, E, t, T)
+    return φ_raw
+    #return normalize(φ_raw, E, t, T)
 end
 
 # returns cartesian x coordinate at a given time, for a given orbit
 function x_t(t, a, ϵ)
-    E = Kepler.E(t, a, ϵ)
+    E = Kepler.E(t, a, ϵ, μ)
     return a * (cosd(E) - ϵ)
 end
 
 # returns cartesian y coordinate at a given time, for a given orbit
 function y_t(t, a, ϵ)
-    E = Kepler.E(t, a, ϵ)
+    E = Kepler.E(t, a, ϵ, μ)
     return a * sqrt(1 - ϵ^2) * sind(E)
 end
 
 function v(t, a, ϵ)
     _r = r(t, a, ϵ)
-    return sqrt(μ*(2/_r - 1/a))
+    return sqrt(G*m_E*(2/_r - 1/a))
+end
+
+function τ(t, a, ϵ)
+    γ = sqrt(1 - (v(t, a, ϵ)^2)/(c^2))
+    #=print(γ)
+    print("\n")
+    print(t*γ)
+    print("\n")
+    print(t)
+    print("\n\n")=#
+    return γ*t
 end
 
 #=
@@ -93,7 +109,7 @@ new_orbit() returns an Orbit struct
 function new_orbit(a::Real, ϵ::Real, i::Real, Ω::Real, ω::Real)
     
     elements = Elements(a, ϵ, i, Ω, ω)
-    T = 2*π*sqrt((a^3)/μ)
+    T = 2.0*π*sqrt((a^3)/μ)
 
     orbit_r = t->r(t, a, ϵ)
     orbit_φ = t->φ_t(t, a, ϵ)
@@ -106,10 +122,10 @@ function new_orbit(a::Real, ϵ::Real, i::Real, Ω::Real, ω::Real)
     orbit_z = t->(x0(t) * sind(i)*sind(ω) - y0(t) * sind(i)*cosd(ω))
 
     orbit_v = t->v(t, a, ϵ)
-    
+    orbit_τ = t->τ(t, a, ϵ)
 
     
-    return Orbit(elements, T, orbit_x, orbit_y, orbit_z, orbit_r, orbit_φ, orbit_v)
+    return Orbit(elements, T, orbit_x, orbit_y, orbit_z, orbit_r, orbit_φ, orbit_v, orbit_τ)
 end
 
 end
