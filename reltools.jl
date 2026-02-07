@@ -1,7 +1,8 @@
 module RelTools
 
-function is_timelike(X)
-    interval = -(X[1]^2) + X[2]^2 + X[3]^2 + X[4]^2
+function is_timelike(S)
+    c = 3*10^8
+    interval = -(c*S[1])^2 + S[2]^2 + S[3]^2 + S[4]^2
 
     if interval < 0
         return true
@@ -10,8 +11,9 @@ function is_timelike(X)
     end
 end
 
-function is_spacelike(U)
-    interval = -(U[1]^2) + U[2]^2 + U[3]^2 + U[4]^2
+function is_spacelike(S)
+    c = 3*10^8
+    interval = -(c*S[1])^2 + S[2]^2 + S[3]^2 + S[4]^2
 
     if interval > 0
         return true
@@ -21,8 +23,9 @@ function is_spacelike(U)
 end
 
 function is_lightlike(S)
-    interval = -(S[1]^2) + S[2]^2 + S[3]^2 + S[4]^2
-    print("Interval: $(interval)\n\n")
+    c = 3*10^8
+    interval = -(c*S[1])^2 + S[2]^2 + S[3]^2 + S[4]^2
+    #print("Interval: $(interval)\n\n")
     if isapprox(interval, 0, atol=1e-5)
         return true
     else
@@ -42,7 +45,9 @@ function check_constellation(X)
     separations = (S1, S2, S3, S4, S5, S6)
 
     for separation in separations
-        if !is_spacelike(separation)
+        if is_lightlike(separation)
+            return false
+        elseif is_timelike(separation)
             return false
         end
     end
