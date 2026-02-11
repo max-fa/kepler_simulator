@@ -26,10 +26,11 @@ function get_emission_points(emission_times, sat)
     return emission_points
 end
 
-# select a physically realistic satellite position that is temporally prior to reception time at north pole
+# define the interval of a satellite's orbit from which it was physically possible for a signal to have reached the user location by reception time
+# the two endpoints of this interval are the furthest time in the past and nearest time in the past from which a signal could have been emitted
 function get_orbital_times_range(reception_time, sat, user)
     c = 3e+8
-    # compute all possible travel distances between user location and GSAT0218
+    # compute all possible travel distances between user location and sat throughout sat's orbit
     distances = []
     for time in range(0.0, 67897.0, step=1)
         distance = R(time, sat, user)
@@ -61,8 +62,8 @@ function get_emission_coords_range(orbital_times_range, sat)
     return emission_coords_range
 end
 
-# given set of emission coordinates and a user location, compute the corresponding separation vectors
-function get_emission_user_separations(emission_coords_range, user)
+# given set of satellite four-vectors and the user four-vector, compute the corresponding separation four-vectors
+function get_sat_user_separations(emission_coords_range, user)
     separations = []
 
     for emission_coords in emission_coords_range
@@ -135,6 +136,7 @@ function main()
     user_cartesian = [0, 0, R_Earth] # north pole in cartesian coordinates (x,y,z)
     reception_time = rand(range(0, 86400, step=1)) # reception time will be randomly sampled from the first 24 hours of orbit
 
+    # the portions of the satellite's orbits from which a signal have possibly been transmitted to the user
     orbital_times_ranges = [
         get_orbital_times_range(reception_time, GSAT0218, user_cartesian),
         get_orbital_times_range(reception_time, GSAT0220, user_cartesian),
@@ -142,28 +144,33 @@ function main()
         get_orbital_times_range(reception_time, GSAT0226, user_cartesian)
     ]
 
-    emission_coords_ranges = [
+    # the set of spacetime vectors for a satellite along the portion of its orbit obtained in the previous step
+    sat_4vector_ranges = [
         get_emission_coords_range(orbital_times_ranges[1], GSAT0218),
         get_emission_coords_range(orbital_times_ranges[2], GSAT0220),
         get_emission_coords_range(orbital_times_ranges[3], GSAT0214),
         get_emission_coords_range(orbital_times_ranges[4], GSAT0226)
     ]
 
-    separations = [
-        get_emission_user_separations(emission_coords_ranges[1], [reception_time; user_cartesian]),
-        get_emission_user_separations(emission_coords_ranges[2], [reception_time; user_cartesian]),
-        get_emission_user_separations(emission_coords_ranges[3], [reception_time; user_cartesian]),
-        get_emission_user_separations(emission_coords_ranges[4], [reception_time; user_cartesian])
+    # the range of separation four-vectors between the satellite and the user location
+    separation_ranges = [
+        get_sat_user_separations(sat_4vector_ranges[1], [reception_time; user_cartesian]),
+        get_sat_user_separations(sat_4vector_ranges[2], [reception_time; user_cartesian]),
+        get_sat_user_separations(sat_4vector_ranges[3], [reception_time; user_cartesian]),
+        get_sat_user_separations(sat_4vector_ranges[4], [reception_time; user_cartesian])
     ]
 
+    # the spacetime intervals of the separation vectors from the previous step
     separation_interval_sets = [
-        get_separations_intervals(separations[1]),
-        get_separations_intervals(separations[2]),
-        get_separations_intervals(separations[3]),
-        get_separations_intervals(separations[4])
+        get_separations_intervals(separation_ranges[1]),
+        get_separations_intervals(separation_ranges[2]),
+        get_separations_intervals(separation_ranges[3]),
+        get_separations_intervals(separation_ranges[4])
     ]
 
+    # the times at which the user-satellite separation four-vectors were at their nullest
 
+    print(reception_time)
     p = plot([orbital_times_ranges[1], orbital_times_ranges[2], orbital_times_ranges[3], orbital_times_ranges[4]], [separation_interval_sets[1], separation_interval_sets[2], separation_interval_sets[3], separation_interval_sets[4]], label=["GSAT0218" "GSAT0220" "GSAT0214" "GSAT0226"], layout=(4,1))
     display(p)
     sleep(30)
