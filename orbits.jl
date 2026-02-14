@@ -36,6 +36,7 @@ struct Orbit
     φ::Function
     v::Function
     τ::Function
+    name::String
 end
 
 
@@ -106,7 +107,7 @@ i = angle of inclination of orbital plane with respect to the equatorial plane
 new_orbit() returns an Orbit struct
 
 =#
-function new_orbit(a::Real, ϵ::Real, i::Real, Ω::Real, ω::Real)
+function new_orbit(a::Real, ϵ::Real, i::Real, Ω::Real, ω::Real, name::String)
     
     elements = Elements(a, ϵ, i, Ω, ω)
     T = 2.0*π*sqrt((a^3)/μ)
@@ -125,7 +126,7 @@ function new_orbit(a::Real, ϵ::Real, i::Real, Ω::Real, ω::Real)
     orbit_τ = t->τ(t, a, ϵ)
 
     
-    return Orbit(elements, T, orbit_x, orbit_y, orbit_z, orbit_r, orbit_φ, orbit_v, orbit_τ)
+    return Orbit(elements, T, orbit_x, orbit_y, orbit_z, orbit_r, orbit_φ, orbit_v, orbit_τ, name)
 end
 
 end

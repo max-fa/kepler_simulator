@@ -12,7 +12,7 @@ pyplot()
 
 # structure to hold the results of computing the emission time
 # of one satellite with respect to the user location
-struct SimulationReport
+struct SimulationResult
     reception_time
     emission_time
     orbital_times_set
@@ -20,6 +20,7 @@ struct SimulationReport
     separation_intervals
     nullest_interval
     interval_deltas
+    position
 end
 
 # returns the Euclidean distance between the satellite and user at time t
@@ -150,7 +151,9 @@ function run_satellite_simulation(t, sat, user)
     interval_pairs = zip(orbital_times, separation_intervals) # an interval pair is a (orbital_time, separation_interval) tuple
     nullest_interval_pair = find_nullest_interval(interval_pairs)
 
-    return SimulationReport(t, nullest_interval_pair[1], orbital_times, orbital_time_step, separation_intervals, nullest_interval_pair, interval_deltas)
+    pos = [sat.x(t), sat.y(t), sat.z(t)]
+
+    return SimulationResult(t, nullest_interval_pair[1], orbital_times, orbital_time_step, separation_intervals, nullest_interval_pair, interval_deltas, pos)
     
 end
 
@@ -167,66 +170,43 @@ function main()
     c = 3e+8
 
 
-    GSAT0218 = Orbits.new_orbit(GalileoRadius + R_Earth, GalileoEcc, GalileoInc, A_RAAN, 0) # A01
-    GSAT0220 = Orbits.new_orbit(GalileoRadius + R_Earth, GalileoEcc, GalileoInc, B_RAAN, 0) # B01
-    GSAT0214 = Orbits.new_orbit(GalileoRadius + R_Earth, GalileoEcc, GalileoInc, C_RAAN, 0) # C01
-    GSAT0226 = Orbits.new_orbit(GalileoRadius + R_Earth, GalileoEcc, GalileoInc, A_RAAN, 0) # A02
+    GSAT0218 = Orbits.new_orbit(GalileoRadius + R_Earth, GalileoEcc, GalileoInc, A_RAAN, 0, "GSAT0218") # A01
+    GSAT0220 = Orbits.new_orbit(GalileoRadius + R_Earth, GalileoEcc, GalileoInc, B_RAAN, 0, "GSAT0220") # B01
+    GSAT0214 = Orbits.new_orbit(GalileoRadius + R_Earth, GalileoEcc, GalileoInc, C_RAAN, 0, "GSAT0214") # C01
+    GSAT0226 = Orbits.new_orbit(GalileoRadius + R_Earth, GalileoEcc, GalileoInc, A_RAAN, 0, "GSAT0226") # A02
     #GSAT0221 = Orbits.new_orbit(GalileoRadius + R_Earth, GalileoEcc, GalileoInc, B_RAAN, 0) # B02
+
+    satellites = (GSAT0218, GSAT0220, GSAT0214, GSAT0226)
     
     user_spherical = [R_Earth, 0, 0] # north pole in polar coordinates (r,θ,φ)
     user_cartesian = [0, 0, R_Earth] # north pole in cartesian coordinates (x,y,z)
-    reception_time = rand(range(0, 86400, step=1)) # reception time will be randomly sampled from the first 24 hours of orbit
-
-    #=
-    # the portions of the satellite's orbits from which a signal have possibly been transmitted to the user
-    orbital_times_sets = [
-        get_orbital_times(reception_time, GSAT0218, user_cartesian),
-        get_orbital_times(reception_time, GSAT0220, user_cartesian),
-        get_orbital_times(reception_time, GSAT0214, user_cartesian),
-        get_orbital_times(reception_time, GSAT0226, user_cartesian)
-    ]
-
-    # the set of spacetime vectors for a satellite along the portion of its orbit obtained in the previous step
-    sat_4vector_sets = [
-        get_sat_4vectors(orbital_times_sets[1], GSAT0218),
-        get_sat_4vectors(orbital_times_sets[2], GSAT0220),
-        get_sat_4vectors(orbital_times_sets[3], GSAT0214),
-        get_sat_4vectors(orbital_times_sets[4], GSAT0226)
-    ]
-
-    # the range of separation four-vectors between the satellite and the user location
-    separation_sets = [
-        get_sat_user_separations(sat_4vector_sets[1], [reception_time; user_cartesian]),
-        get_sat_user_separations(sat_4vector_sets[2], [reception_time; user_cartesian]),
-        get_sat_user_separations(sat_4vector_sets[3], [reception_time; user_cartesian]),
-        get_sat_user_separations(sat_4vector_sets[4], [reception_time; user_cartesian])
-    ]
-
-    # the spacetime intervals of the separation vectors from the previous step
-    separation_interval_sets = [
-        get_separations_intervals(separation_sets[1]),
-        get_separations_intervals(separation_sets[2]),
-        get_separations_intervals(separation_sets[3]),
-        get_separations_intervals(separation_sets[4])
-    ]
-
-    # the per time-step change in spacetime interval for each satellite
-    separation_interval_delta_sets = [
-        get_interval_deltas(separation_interval_sets[1]),
-        get_interval_deltas(separation_interval_sets[2]),
-        get_interval_deltas(separation_interval_sets[3]),
-        get_interval_deltas(separation_interval_sets[4])
-    ]
-    =#
-
-    GSAT0218SimulationReport = run_satellite_simulation(reception_time, GSAT0218, user_cartesian)
-
     
 
     
-    #savefig(plot(orbital_times_ranges[1], separation_interval_sets[1], yaxis="User-Satellite Spacetime Interval", xaxis="Orbital Time (ECI frame)", title="Simulation for reception time=$(reception_time)", legend=false), "img\\North_Pole_Tests\\GSAT0218_test.png")
-    
 
+    test_number = 1
+    test_dir_root = "C:\\FengLab\\code\\kepler_simulator\\img\\North_Pole_Tests"
+
+    for i in range(1,6)
+        reception_time = rand(range(0, 86400, step=1)) # reception time will be randomly sampled from the first 24 hours of orbit
+        test_dir_path = test_dir_root * "\\Run$(test_number)"
+        mkdir(test_dir_path)
+
+        for sat in satellites
+            result = run_satellite_simulation(reception_time, sat, user_cartesian)
+
+            sat_test_path = test_dir_path * "\\$(sat.name)"
+            mkdir(sat_test_path)
+
+            savefig(plot(result.orbital_times_set, result.separation_intervals, title="$(sat.name) Test $(test_number): Interval vs. Time", legend=false, yaxis="Sat-User Separation Interval", xaxis="Time in Seconds"), sat_test_path * "\\interval_graph.png")
+            savefig(plot(result.orbital_times_set, result.interval_deltas, title="$(sat.name) Test $(test_number): Interval Deltas vs. Time", legend=false, yaxis="Separation Interval Deltas", xaxis="Time in Seconds"), sat_test_path * "\\delta_graph.png")
+            
+            test_data = "Reception Time: $(result.reception_time)\nEstimated Emission Time: $(result.emission_time)\nSimulation Timestep Size: $(result.orbital_time_step)\nNullest Interval: $(result.nullest_interval)\nSatellite Position: $(result.position)\n"
+            write(sat_test_path * "\\data.txt", test_data)
+        end
+        
+        test_number += 1
+    end
 
 end
 
