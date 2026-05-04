@@ -37,13 +37,13 @@ function main()
     =#
 
 
-    GSAT0218 = Orbits.new_orbit(GalileoHeight + R_Earth, GalileoEcc, GalileoInc, A_RAAN, 0) # A01
-    GSAT0220 = Orbits.new_orbit(GalileoHeight + R_Earth, GalileoEcc, GalileoInc, B_RAAN, 0) # B01
-    GSAT0214 = Orbits.new_orbit(GalileoHeight + R_Earth, GalileoEcc, GalileoInc, C_RAAN, 0) # C01
-    GSAT0226 = Orbits.new_orbit(GalileoHeight + R_Earth, GalileoEcc, GalileoInc, A_RAAN, 0) # A02
+    GSAT0218 = Orbits.new_orbit(GalileoHeight + R_Earth, GalileoEcc, GalileoInc, A_RAAN, 0, "GSAT0218") # A01
+    GSAT0220 = Orbits.new_orbit(GalileoHeight + R_Earth, GalileoEcc, GalileoInc, B_RAAN, 0, "GSAT0220") # B01
+    GSAT0214 = Orbits.new_orbit(GalileoHeight + R_Earth, GalileoEcc, GalileoInc, C_RAAN, 0, "GSAT0214") # C01
+    GSAT0226 = Orbits.new_orbit(GalileoHeight + R_Earth, GalileoEcc, GalileoInc, A_RAAN, 0, "GSAT0226") # A02
     #GSAT0221 = Orbits.new_orbit(GalileoHeight + R_Earth, GalileoEcc, GalileoInc, B_RAAN, 0) # B02
-    print(GSAT0218.T)
-    #times = range(0.0, 67897.0, step=60) # 1 complete orbit in seconds, evaluated every minute
+    #print(GSAT0218.T)
+    times = range(0.0, 67897.0, step=60) # 1 complete orbit in seconds, evaluated every minute
 
     plot(GSAT0218.x.(times), GSAT0218.y.(times), GSAT0218.z.(times)) # plotting GSAT0218
     #plot(times, GSAT0218.x.(times))

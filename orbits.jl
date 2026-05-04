@@ -37,6 +37,7 @@ struct Orbit
     v::Function
     τ::Function
     name::String
+    offset::Real
 end
 
 
@@ -107,26 +108,26 @@ i = angle of inclination of orbital plane with respect to the equatorial plane
 new_orbit() returns an Orbit struct
 
 =#
-function new_orbit(a::Real, ϵ::Real, i::Real, Ω::Real, ω::Real, name::String)
+function new_orbit(a::Real, ϵ::Real, i::Real, Ω::Real, ω::Real, name::String, offset::Real=0)
     
     elements = Elements(a, ϵ, i, Ω, ω)
     T = 2.0*π*sqrt((a^3)/μ)
 
-    orbit_r = t->r(t, a, ϵ)
-    orbit_φ = t->φ_t(t, a, ϵ)
-    x0 = t->x_t(t, a, ϵ) # cartesian x
-    y0 = t->y_t(t, a, ϵ) # cartesian y
+    orbit_r = t->r(t + offset, a, ϵ)
+    orbit_φ = t->φ_t(t + offset, a, ϵ)
+    x0 = t->x_t(t + offset, a, ϵ) # cartesian x
+    y0 = t->y_t(t + offset, a, ϵ) # cartesian y
 
     # these are the x, y, and z components after applying rotation matrix
     orbit_x = t->(x0(t) * (cosd(Ω)*cosd(ω) - sind(Ω)*sind(ω)) + y0(t) * (sind(Ω)*cosd(i)*cosd(ω) + cosd(Ω)*sind(ω)))
     orbit_y = t->(x0(t) * (-sind(Ω)*cosd(ω) - cosd(Ω)*cosd(i)*sind(ω)) + y0(t) * (cosd(Ω)*cosd(i)*cosd(ω) - sind(Ω)*sind(ω)))
     orbit_z = t->(x0(t) * sind(i)*sind(ω) - y0(t) * sind(i)*cosd(ω))
 
-    orbit_v = t->v(t, a, ϵ)
-    orbit_τ = t->τ(t, a, ϵ)
+    orbit_v = t->v(t + offset, a, ϵ)
+    orbit_τ = t->τ(t + offset, a, ϵ)
 
     
-    return Orbit(elements, T, orbit_x, orbit_y, orbit_z, orbit_r, orbit_φ, orbit_v, orbit_τ, name)
+    return Orbit(elements, T, orbit_x, orbit_y, orbit_z, orbit_r, orbit_φ, orbit_v, orbit_τ, name, offset)
 end
 
 end
