@@ -43,12 +43,12 @@ function main()
     GSAT0226 = Orbits.new_orbit(GalileoHeight + R_Earth, GalileoEcc, GalileoInc, A_RAAN, 0, "GSAT0226") # A02
     #GSAT0221 = Orbits.new_orbit(GalileoHeight + R_Earth, GalileoEcc, GalileoInc, B_RAAN, 0) # B02
     #print(GSAT0218.T)
-    times = range(0.0, 67897.0, step=60) # 1 complete orbit in seconds, evaluated every minute
+    times = range(0.0, GSAT0218.T, step=60) # 1 complete orbit in seconds, evaluated every minute
 
-    plot(GSAT0218.x.(times), GSAT0218.y.(times), GSAT0218.z.(times)) # plotting GSAT0218
-    #plot(times, GSAT0218.x.(times))
     #plot(GSAT0218.r.(times))
-    #plot([GSAT0218.x.(times), GSAT0220.x.(times), GSAT0214.x.(times)], [GSAT0218.y.(times), GSAT0220.y.(times), GSAT0214.y.(times)], [GSAT0218.z.(times), GSAT0220.z.(times), GSAT0214.z.(times)]) # plotting GSAT0218
+    print(GSAT0218.r(rand(times)))
+    
+    #plot([GSAT0218.x.(times), GSAT0220.x.(times), GSAT0214.x.(times)], [GSAT0218.y.(times), GSAT0220.y.(times), GSAT0214.y.(times)], [GSAT0218.z.(times), GSAT0220.z.(times), GSAT0214.z.(times)]) # plotting entire constellation
     
 
 end

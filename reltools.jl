@@ -1,7 +1,13 @@
 module RelTools
 
+function get_interval(vector)
+    c = 3e+8
+
+    return -(c*vector[1])^2 + vector[2]^2 + vector[3]^2 + vector[4]^2
+end
+
 function is_timelike(S)
-    c = 3*10^8
+    c = 3e+8
     interval = -(c*S[1])^2 + S[2]^2 + S[3]^2 + S[4]^2
 
     if interval < 0
@@ -12,7 +18,7 @@ function is_timelike(S)
 end
 
 function is_spacelike(S)
-    c = 3*10^8
+    c = 3e+8
     interval = -(c*S[1])^2 + S[2]^2 + S[3]^2 + S[4]^2
 
     if interval > 0
@@ -23,7 +29,7 @@ function is_spacelike(S)
 end
 
 function is_lightlike(S)
-    c = 3*10^8
+    c = 3e+8
     interval = -(c*S[1])^2 + S[2]^2 + S[3]^2 + S[4]^2
     #print("Interval: $(interval)\n\n")
     if isapprox(interval, 0, atol=1e-5)
