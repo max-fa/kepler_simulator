@@ -2,6 +2,7 @@ module CerealInv
 
 include("reltools.jl")
 
+using DoubleFloats
 using Roots
 import .RelTools
 
@@ -25,8 +26,8 @@ end
 
 function get_emission_vector(user, sat)
     interval_func = get_interval_func(user, sat)
-    search_duration = 0.2 # in seconds
-    step_size = 1e-7 # in seconds
+    search_duration = Double64(0.2) # in seconds
+    step_size = Double64(1e-7) # in seconds
     user_sat_intervals = get_separation_intervals(interval_func, user[1], search_duration, step_size) # return a TimeSeries for the user-satellite separation spacetime intervals
 
     #max_index = indexin(maximum(user_sat_intervals.vals), interval_series.vals)[1]
@@ -62,7 +63,7 @@ function get_root_brackets(intervals)
     for interval in intervals
         i += 1
         if i != length(intervals)
-            if intervals[i+1] * interval < 0
+            if intervals[i+1] * interval < Double64(0)
                 push!(brackets, (i, i+1))
             end
         end

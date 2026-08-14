@@ -3,6 +3,7 @@ include("../cereal_inv.jl")
 include("../reltools.jl")
 
 
+using DoubleFloats
 using Infiltrator
 using cereal
 using LinearAlgebra
@@ -16,28 +17,28 @@ import .RelTools
 function main()
     
     # constellation-wide orbital parameters for Galileo satellites
-    GalileoRadius = 29599.8e+3
-    GalileoEcc = 0.0
-    GalileoInc = 56.0
-    A_RAAN = 317.632
-    B_RAAN = 77.632
-    C_RAAN = 197.632
-    R_Earth = 6.371e+6
-    c = 3e+8
-    A02_offset = 3600
+    GalileoRadius = Double64(29599.8e+3)
+    GalileoEcc = Double64(0.0)
+    GalileoInc = Double64(56.0)
+    A_RAAN = Double64(317.632)
+    B_RAAN = Double64(77.632)
+    C_RAAN = Double64(197.632)
+    R_Earth = Double64(6.371e+6)
+    c = Double64(3e+8)
+    A02_offset = Double64(3600)
 
 
-    GSAT0218 = Orbits.new_orbit(GalileoRadius + R_Earth, GalileoEcc, GalileoInc, A_RAAN, 0, "GSAT0218") # A01
-    GSAT0220 = Orbits.new_orbit(GalileoRadius + R_Earth, GalileoEcc, GalileoInc, B_RAAN, 0, "GSAT0220") # B01
-    GSAT0214 = Orbits.new_orbit(GalileoRadius + R_Earth, GalileoEcc, GalileoInc, C_RAAN, 0, "GSAT0214") # C01
-    GSAT0226 = Orbits.new_orbit(GalileoRadius + R_Earth, GalileoEcc, GalileoInc, A_RAAN, 0, "GSAT0226", A02_offset) # A02
+    GSAT0218 = Orbits.new_orbit(GalileoRadius + R_Earth, GalileoEcc, GalileoInc, A_RAAN, Double64(0), "GSAT0218") # A01
+    GSAT0220 = Orbits.new_orbit(GalileoRadius + R_Earth, GalileoEcc, GalileoInc, B_RAAN, Double64(0), "GSAT0220") # B01
+    GSAT0214 = Orbits.new_orbit(GalileoRadius + R_Earth, GalileoEcc, GalileoInc, C_RAAN, Double64(0), "GSAT0214") # C01
+    GSAT0226 = Orbits.new_orbit(GalileoRadius + R_Earth, GalileoEcc, GalileoInc, A_RAAN, Double64(0), "GSAT0226", A02_offset) # A02
     #GSAT0221 = Orbits.new_orbit(GalileoRadius + R_Earth, GalileoEcc, GalileoInc, B_RAAN, 0) # B02
 
     satellites = (GSAT0218, GSAT0220, GSAT0214, GSAT0226)
     
-    reception_time = rand(range(0.0, 86400, step=1))
+    reception_time = rand(range(Double64(0.0), Double64(86400), step=Double64(1)))
     #user_spherical = [R_Earth, 0, 0] # north pole in polar coordinates (r,θ,φ)
-    user_cartesian = [reception_time, 0, 0, R_Earth] # north pole in cartesian coordinates (x,y,z)
+    user_cartesian = [reception_time, Double64(0), Double64(0), R_Earth] # north pole in cartesian coordinates (x,y,z)
 
     print("Reception time is: $(reception_time)\n\n")
 
