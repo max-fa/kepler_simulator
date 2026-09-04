@@ -5,7 +5,7 @@ using DoubleFloats
 function get_interval(vector)
     c = Double64(3e+8)
 
-    return -(c*vector[1])^2 + vector[2]^2 + vector[3]^2 + vector[4]^2
+    return -(vector[1])^2 + vector[2]^2 + vector[3]^2 + vector[4]^2
 end
 
 function is_timelike(S)

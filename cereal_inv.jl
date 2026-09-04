@@ -25,22 +25,24 @@ function generate_emission_constellation(user, sats)
 end
 
 function get_emission_vector(user, sat)
+    c = Double64(3.0e+8)
     interval_func = get_interval_func(user, sat)
     search_duration = Double64(0.2) # in seconds
-    step_size = Double64(1e-7) # in seconds
-    user_sat_intervals = get_separation_intervals(interval_func, user[1], search_duration, step_size) # return a TimeSeries for the user-satellite separation spacetime intervals
+    step_size = Double64(1e-6) # in seconds
+    user_sat_intervals = get_separation_intervals(interval_func, user[1]/c, search_duration, step_size) # return a TimeSeries for the user-satellite separation spacetime intervals
 
     #max_index = indexin(maximum(user_sat_intervals.vals), interval_series.vals)[1]
     #max_time = interval_series.times[max_index]
     l_index, r_index = get_root_brackets(user_sat_intervals.vals)[1]
     l_bracket, r_bracket = user_sat_intervals.times[l_index], user_sat_intervals.times[r_index]
-    emission_time = find_emission_time(interval_func, l_bracket, r_bracket) # find the null interval using some root-finding function
+    emission_time = find_emission_time(interval_func, l_bracket, r_bracket) # find the null interval using some root-finding function, returns a raw time
 
-    return [emission_time, sat.x(emission_time), sat.y(emission_time), sat.z(emission_time)]
+    return [c*emission_time, sat.x(emission_time), sat.y(emission_time), sat.z(emission_time)] # return a four-vector in geometric time
 end
 
 function get_interval_func(user, sat)
-    return t->(RelTools.get_interval([t, sat.x(t), sat.y(t), sat.z(t)] - user))
+    c = Double64(3e+8)
+    return t->(RelTools.get_interval([c*t, sat.x(t), sat.y(t), sat.z(t)] - user))
 end
 
 # evaluate user-satellite intervals over a time range centered on the reception time and with a specified step step_size
